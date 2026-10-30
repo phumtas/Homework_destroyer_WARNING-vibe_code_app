@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework Destroyer - AI Homework Assistant</title>
+  <meta name="description" content="Destroy your homework with AI! Extracts blanks from DOCX and PDF, generates answers, and verifies them with double-check loops.">
+  
+  <!-- Modern Typography from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Window Titlebar (Supports Desktop minimize & Webapp compact mode) -->
+  <header class="window-titlebar" id="windowTitlebar">
+    <div class="brand-section">
+      <div class="brand-logo" id="brandLogo">⚡</div>
+      <div class="brand-details">
+        <h1 class="brand-title">Homework Destroyer</h1>
+      </div>
+      <span class="brand-badge">Gemini Powered</span>
+    </div>
+    
+    <div class="window-controls">
+      <button class="win-btn btn-minimize" id="btnMinimize" title="Minimize Window / Compact Mode" aria-label="Minimize">
+        <span>_</span>
+      </button>
+      <button class="win-btn" id="btnFullscreen" title="Toggle Fullscreen" aria-label="Fullscreen">
+        <span>□</span>
+      </button>
+      <button class="win-btn btn-close" id="btnResetApp" title="Reset View" aria-label="Reset">
+        <span>✕</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Floating Mini Dock Widget (Shown when minimized in browser) -->
+  <div class="mini-dock-widget" id="miniDockWidget" title="Click to Restore Homework Destroyer">
+    <div class="mini-dock-icon">⚡</div>
+    <div class="mini-dock-text">Homework Destroyer</div>
+    <span class="mini-dock-badge" id="miniDockBadge">Ready</span>
+  </div>
+
+  <main class="app-container" id="appMainContainer">
+    
+    <!-- Hero Section -->
+    <section class="hero-header">
+      <div class="hero-tag">
+        <span>✨</span> AI-Powered Worksheet & Homework Solver
+      </div>
+      <h2 class="hero-title">Homework Destroyer</h2>
+      <p class="hero-subtitle">
+        Drop your <b>.docx</b> or <b>.pdf</b> homework. Our system removes blank placeholders (<code>......</code> / <code>____</code>), generates verified answers, and double-checks everything with a 2-round self-correction loop.
+      </p>
+    </section>
+
+    <!-- Flowchart Strip (Direct representation of user diagram) -->
+    <nav class="flowchart-strip" aria-label="Processing Pipeline Steps">
+      <div class="flow-step active" id="step-upload">
+        <div class="flow-icon-circle">📂</div>
+        <span class="flow-step-label">1. File Input</span>
+      </div>
+      <span class="flow-arrow">➔</span>
+      <div class="flow-step" id="step-branch">
+        <div class="flow-icon-circle">⚙️</div>
+        <span class="flow-step-label">2. docx / pypdf</span>
+      </div>
+      <span class="flow-arrow">➔</span>
+      <div class="flow-step" id="step-blanks">
+        <div class="flow-icon-circle">✂️</div>
+        <span class="flow-step-label">3. Detect Blanks</span>
+      </div>
+      <span class="flow-arrow">➔</span>
+      <div class="flow-step" id="step-generate">
+        <div class="flow-icon-circle">💡</div>
+        <span class="flow-step-label">4. Gen Answer</span>
+      </div>
+      <span class="flow-arrow">➔</span>
+      <div class="flow-step" id="step-verify">
+        <div class="flow-icon-circle">🔍</div>
+        <span class="flow-step-label">5. Verify (Max 2)</span>
+      </div>
+      <span class="flow-arrow">➔</span>
+      <div class="flow-step" id="step-insert">
+        <div class="flow-icon-circle">✏️</div>
+        <span class="flow-step-label">6. Fill Answers</span>
+      </div>
+      <span class="flow-arrow">➔</span>
+      <div class="flow-step" id="step-export">
+        <div class="flow-icon-circle">📥</div>
+        <span class="flow-step-label">7. DOC / PDF</span>
+      </div>
+    </nav>
+
+    <!-- Main Grid: Left Area (Upload & Results) + Right Area (Settings & Info) -->
+    <div class="main-grid">
+      
+      <!-- Left Column: File Drop & Solving -->
+      <section class="left-column" style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- Drag & Drop Card -->
+        <div class="glass-card">
+          <h3 class="card-title">
+            <span class="icon">📤</span> Drag & Drop Homework File
+          </h3>
+
+          <div class="dropzone-container">
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload homework document">
+              <input type="file" id="fileInput" accept=".pdf,.docx,.doc" style="display: none;">
+              <div class="dropzone-icon">📥</div>
+              <div class="dropzone-text-primary">Drag & Drop your homework here</div>
+              <div class="dropzone-text-secondary">or click to browse from your computer</div>
+              <div class="dropzone-formats">
+                <span class="format-pill">.DOCX (Word)</span>
+                <span class="format-pill">.PDF (Document)</span>
+                <span class="format-pill">.DOC</span>
+              </div>
+            </div>
+
+            <!-- Selected File Preview -->
+            <div class="file-preview-card" id="filePreviewCard">
+              <div class="file-info">
+                <div class="file-type-badge docx" id="fileTypeBadge">DOCX</div>
+                <div class="file-details">
+                  <span class="file-name" id="fileName">homework.docx</span>
+                  <div class="file-meta">
+                    <span id="fileSize">0 KB</span>
+                    <span>•</span>
+                    <span id="fileStats">Ready to parse</span>
+                  </div>
+                </div>
+              </div>
+              <button class="btn-remove-file" id="btnRemoveFile" title="Remove selected file" aria-label="Remove file">✕</button>
+            </div>
+          </div>
+
+          <!-- Document Snippet Preview -->
+          <div id="snippetPreviewBox" style="display: none; margin-top: 14px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 6px;">
+              📄 Detected Content Snippet:
+            </div>
+            <pre id="snippetText" style="font-size: 0.8rem; color: var(--text-secondary); max-height: 120px; overflow-y: auto; white-space: pre-wrap; font-family: inherit;"></pre>
+          </div>
+
+          <!-- Custom Instructions -->
+          <div class="form-group" style="margin-top: 18px;">
+            <label class="form-label" for="customInstructions">
+              <span>Optional Custom Guidance:</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">e.g. "Thai Language", "Grade 8 Math", "Short answers only"</span>
+            </label>
+            <input 
+              type="text" 
+              id="customInstructions" 
+              class="form-input" 
+              placeholder="e.g. Solve in Thai language, include step-by-step working..."
+            >
+          </div>
+
+          <!-- Action Button -->
+          <button class="btn-primary" id="btnStartSolve" disabled>
+            <span id="solveBtnIcon">🚀</span>
+            <span id="solveBtnText">Destroy My Homework (Solve & Verify)</span>
+          </button>
+
+          <!-- Progress Panel -->
+          <div class="progress-panel" id="progressPanel">
+            <div class="progress-status-text">
+              <span id="progressMessage">Initializing pipeline...</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Solved Results Section -->
+        <section class="glass-card results-section" id="resultsSection">
+          <div class="results-header-bar">
+            <div>
+              <h3 class="card-title" style="margin-bottom: 4px;">
+                <span class="icon">🎯</span> Solved Homework Output
+              </h3>
+              <div style="font-size: 0.82rem; color: var(--text-secondary);">
+                All questions answered and verified with double-check loops.
+              </div>
+            </div>
+
+            <div class="download-btn-group">
+              <a href="#" class="btn-download docx" id="btnDownloadDocx" download>
+                <span>📥</span> Solved .DOCX
+              </a>
+              <a href="#" class="btn-download pdf" id="btnDownloadPdf" download>
+                <span>📄</span> Solved .PDF
+              </a>
+              <button class="btn-secondary" id="btnCopyAnswers" title="Copy all answers to clipboard">
+                <span>📋</span> Copy All
+              </button>
+            </div>
+          </div>
+
+          <!-- Question Cards Container -->
+          <div class="question-cards-list" id="questionCardsList">
+            <!-- Dynamically populated -->
+          </div>
+        </section>
+
+      </section>
+
+      <!-- Right Column: Settings & Flowchart Information -->
+      <aside class="right-column" style="display: flex; flex-direction: column; gap: 24px;">
+        
+        <!-- API Configuration Card -->
+        <div class="glass-card">
+          <h3 class="card-title">
+            <span class="icon">🔑</span> Gemini LLM Config
+          </h3>
+
+          <div class="form-group">
+            <label class="form-label" for="apiKeyInput">
+              <span>Gemini API Key</span>
+              <span class="status-badge warning" id="keyStatusBadge">Key Needed</span>
+            </label>
+            <div class="input-wrapper">
+              <input 
+                type="password" 
+                id="apiKeyInput" 
+                class="form-input" 
+                placeholder="AIzaSy..." 
+                autocomplete="off"
+              >
+              <button type="button" class="toggle-password-btn" id="btnToggleKeyVisibility" title="Show/Hide Key">👁️</button>
+            </div>
+            <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+              Get a free API key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: none;">Google AI Studio</a>.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="modelSelect">LLM Model</label>
+            <select id="modelSelect" class="form-select">
+              <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (Recommended)</option>
+              <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Fastest)</option>
+              <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro Preview (Complex STEM)</option>
+            </select>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-secondary" id="btnTestKey" style="flex: 1; justify-content: center;">
+              <span>🧪</span> Test Connection
+            </button>
+            <button class="btn-secondary" id="btnSaveKey" style="flex: 1; justify-content: center;">
+              <span>💾</span> Save Key
+            </button>
+          </div>
+        </div>
+
+        <!-- Flowchart Architecture Card -->
+        <div class="glass-card">
+          <h3 class="card-title">
+            <span class="icon">📐</span> Flowchart Logic
+          </h3>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; color: var(--text-secondary);">
+            <li style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent-cyan);">1.</span>
+              <div><b>Format Branch:</b> If <code>.docx</code> use <i>python-docx</i>; If <code>.pdf</code> use <i>pypdf</i>.</div>
+            </li>
+            <li style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent-cyan);">2.</span>
+              <div><b>Clean Blanks:</b> LLM strips placeholders like <code>......</code>, <code>___</code>, <code>[ ]</code> into structured questions.</div>
+            </li>
+            <li style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent-cyan);">3.</span>
+              <div><b>Generate Answers:</b> Solves each item with high precision & step-by-step reasoning.</div>
+            </li>
+            <li style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent-cyan);">4.</span>
+              <div><b>Verification Loop:</b> Checks answers against accuracy rules. If wrong, retries up to <b>Max 2 rounds</b>.</div>
+            </li>
+            <li style="display: flex; gap: 10px; align-items: flex-start;">
+              <span style="color: var(--accent-cyan);">5.</span>
+              <div><b>Insert & Export:</b> Re-inserts answers and exports formatted <b>.docx</b> & <b>.pdf</b> files.</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- App Minimize & Desktop Info Card -->
+        <div class="glass-card">
+          <h3 class="card-title">
+            <span class="icon">💻</span> App Controls
+          </h3>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 12px;">
+            Running in hybrid mode. You can minimize this webapp to your taskbar or click the top-right <b>_</b> button to enter compact mini-widget mode.
+          </p>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-secondary" id="btnCompactMode" style="width: 100%; justify-content: center;">
+              <span>🗕</span> Minimize Webapp
+            </button>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
